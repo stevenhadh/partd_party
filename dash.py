@@ -282,7 +282,6 @@ with col2:
         label="Beneficiary Exposure (OOP)",
         value=f"${sum_b['Beneficiary Out-of-Pocket']:,.2f}",
         delta=f"${sum_b['Beneficiary Out-of-Pocket'] - sum_a['Beneficiary Out-of-Pocket']:,.2f}",
-        delta_inverse=True,
     )
 with col3:
     st.metric(
