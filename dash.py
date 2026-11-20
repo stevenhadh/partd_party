@@ -10,25 +10,19 @@ st.set_page_config(
 st.html(
     """
     <style>
-    /* Override Streamlit's primary color variable just for your 7 "_b" sliders */
-    .st-key-ded_b,
-    .st-key-oop_b,
-    .st-key-coins_b,
-    .st-key-imfg_b,
-    .st-key-cmfg_b,
-    .st-key-freins_b,
-    .st-key-price_chg_b {
-        --st-primary-color: #1E88E5 !important;
-        --primary-color: #1E88E5 !important;
-    }
-
-    /* Fallback for BaseWeb inline styles on thumb, value label, and track */
-    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) div[role="slider"] {
-        background-color: #1E88E5 !important;
-        box-shadow: rgba(30, 136, 229, 0.25) 0px 0px 0px 0.2rem !important;
-    }
+    /* 1. Exact blue for the floating value text */
     :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-testid="stSliderThumbValue"] {
         color: #1E88E5 !important;
+    }
+
+    /* 2. Shift the red active track & thumb to blue while keeping the gray unfilled track intact */
+    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-baseweb="slider"] {
+        filter: hue-rotate(215deg) saturate(1.25);
+    }
+
+    /* 3. Counter-rotate the value text inside the slider so its #1E88E5 color isn't shifted twice */
+    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-testid="stSliderThumbValue"] {
+        filter: hue-rotate(-215deg);
     }
     </style>
     """
