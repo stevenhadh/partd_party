@@ -7,6 +7,27 @@ st.set_page_config(
     layout="wide",
 )
 
+st.markdown(
+    """
+    <style>
+        div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div > div:nth-child(2) {
+            background-color: #2563eb !important;
+        }
+        div[data-testid="stSlider"] div[role="slider"] {
+            background-color: #2563eb !important;
+            border-color: #1d4ed8 !important;
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+        }
+        div[data-testid="stSlider"] div[data-testid="stTickBarMin"],
+        div[data-testid="stSlider"] div[data-testid="stTickBarMax"],
+        div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+            color: #1d4ed8 !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 PRESETS = {
     "2025 Standard": {
         "deductible": 590.0,
@@ -41,7 +62,7 @@ SELECT_OPTIONS = PRESET_NAMES + ["Custom"]
 
 
 # ---------------------------------------------------------------------
-# 1. Data Loader (Cached)
+# 1. Load Data
 # ---------------------------------------------------------------------
 @st.cache_data(show_spinner="Loading prescription data...")
 def load_data(path: str = "pharmacy_prescriptions.csv"):
@@ -54,7 +75,7 @@ def load_data(path: str = "pharmacy_prescriptions.csv"):
 
 
 # ---------------------------------------------------------------------
-# 2. Core Simulation Engine (Cached + NumPy-accelerated)
+# 2. Core Simulation Engine
 # ---------------------------------------------------------------------
 @st.cache_data(show_spinner="Running Part D benefit simulation...")
 def simulate_part_d(
@@ -224,7 +245,7 @@ def style_right_vs_left(right_df: pd.DataFrame, left_df: pd.DataFrame):
 
 
 # ---------------------------------------------------------------------
-# 3. Scenario State Callbacks
+# 3. Scenario States
 # ---------------------------------------------------------------------
 def _apply_preset_to_state(side: str, preset_name: str):
     vals = PRESETS[preset_name]
@@ -284,7 +305,7 @@ def on_slider_change(side: str):
 
 
 # ---------------------------------------------------------------------
-# 4. Sidebar Configuration & Data Load
+# 4. Config
 # ---------------------------------------------------------------------
 st.title("Part D Benefit Comparison Dashboard")
 
@@ -299,29 +320,30 @@ if any(c not in raw_df.columns for c in required_cols):
     st.stop()
 
 # ---------------------------------------------------------------------
-# 5. Global KPIs & Data Summary (Top of Page)
+# 5. Data Summary
 # ---------------------------------------------------------------------
 n_patients = raw_df["patient_id"].nunique()
 n_rx = raw_df["pharmacy_order_id"].nunique()
 base_total_gross = raw_df["total_drug_cost"].sum()
 
-st.subheader("📊 Dataset Overview")
+st.subheader("📊  Dataset Overview")
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 kpi1.metric("Total Patients", f"{n_patients:,}")
 kpi2.metric("Total Prescriptions", f"{n_rx:,}")
 kpi3.metric("Base Gross Drug Spending", money(base_total_gross))
 kpi4.metric("Base Avg Cost per Patient", money(base_total_gross / n_patients if n_patients else 0))
 
+st.space("medium")
 st.caption("Synthetic dataset from Kaggle by DeepLumiere: https://www.kaggle.com/datasets/deeplumiere/hospital-management-data")
 st.divider()
 
 # ---------------------------------------------------------------------
-# 6. Side-by-Side Scenario Configuration
+# 6. Side-by-side Scenarios
 # ---------------------------------------------------------------------
-init_side_state("a", "2025 Standard")
-init_side_state("b", "2026 Standard")
+init_side_state("a", "2026 Standard")
+init_side_state("b", "2027 Standard")
 
-st.subheader("⚙️ Scenario Setup")
+st.subheader("⚙️  Scenario Settings")
 col_cfg_left, col_cfg_right = st.columns(2)
 
 with col_cfg_left:
@@ -411,7 +433,7 @@ with col_cfg_right:
 st.divider()
 
 # ---------------------------------------------------------------------
-# 7. Run Simulations (Cached by input parameters)
+# 7. Number crunch
 # ---------------------------------------------------------------------
 try:
     results_a = simulate_part_d(
@@ -447,9 +469,9 @@ gross_a = results_a["total_drug_cost"].sum()
 gross_b = results_b["total_drug_cost"].sum()
 
 # ---------------------------------------------------------------------
-# 8. Side-by-Side Financial Responsibility & Stacked Bar Charts
+# 8. Financial Responsibility
 # ---------------------------------------------------------------------
-st.subheader("📊 Financial Responsibility & Coverage Phase Spending")
+st.subheader("💰  Financial Responsibility & Catastrophic Distribution")
 
 col_res_l, col_res_r = st.columns(2)
 
@@ -460,10 +482,12 @@ with col_res_l:
     mfg_a = results_a["manufacturer_burden"].sum()
     fed_a = results_a["federal_reinsurance"].sum()
 
-    st.metric("Total Plan Liability", money(plan_a))
-    st.metric("Total Member Out-of-Pocket", money(bene_a))
-    st.divider()
+    cat_count_a = int((members_a["catastrophic_cost"] > 0).sum())
+    st.metric("Total Members Reaching Catastrophic", cat_count_a)
+    st.metric("Catastrophic Share", cat_count_a / n_patients if n_patients else 0)
     
+    st.divider()
+
     df_a = pd.DataFrame({
         "Responsible Party": ["Beneficiary", "Plan Liability", "Manufacturer", "Federal Reinsurance"],
         "Amount": [bene_a, plan_a, mfg_a, fed_a],
@@ -486,21 +510,12 @@ with col_res_r:
     bene_b = results_b["beneficiary_payment"].sum()
     mfg_b = results_b["manufacturer_burden"].sum()
     fed_b = results_b["federal_reinsurance"].sum()
-
-    st.metric(
-        "Total Plan Liability",
-        money(plan_b),
-        delta=money(plan_b - plan_a),
-        delta_color="inverse",
-    )
-    st.metric(
-        "Total Member Out-of-Pocket",
-        money(bene_b),
-        delta=money(bene_b - bene_a),
-        delta_color="inverse",
-    )
-    st.divider()
     
+    cat_count_b = int((members_b["catastrophic_cost"] > 0).sum())
+    st.metric("Total Members Reaching Catastrophic", cat_count_b)
+    st.metric("Catastrophic Share", cat_count_b / n_patients if n_patients else 0)
+    st.divider()
+
     df_b = pd.DataFrame({
         "Responsible Party": ["Beneficiary", "Plan Liability", "Manufacturer", "Federal Reinsurance"],
         "Amount": [bene_b, plan_b, mfg_b, fed_b],
@@ -520,33 +535,13 @@ with col_res_r:
 st.divider()
 
 # ---------------------------------------------------------------------
-# 9. Stage Member Counts & Cost Drivers (Drugs & Individuals)
+# 9. Cost Drivers (Drugs & Individuals)
 # ---------------------------------------------------------------------
-st.subheader("Catastrophic Distribution")
-cat_count_a = int((members_a["catastrophic_cost"] > 0).sum())
-cat_count_b = int((members_b["catastrophic_cost"] > 0).sum())
-
-stage_count_df = pd.DataFrame({
-    "Scenario": [f"Left ({active_label_a})", f"Right ({active_label_b})"],
-    "Total Patients": [n_patients, n_patients],
-    "Reached Catastrophic": [cat_count_a, cat_count_b],
-    "Catastrophic Share": [
-        cat_count_a / n_patients if n_patients else 0,
-        cat_count_b / n_patients if n_patients else 0,
-    ],
-})
-st.dataframe(
-    stage_count_df.style.format({"Catastrophic Share": "{:.1%}"}),
-    hide_index=True,
-    use_container_width=True,
-)
-
-st.divider()
 
 driver_col1, driver_col2 = st.columns(2)
 
 with driver_col1:
-    st.markdown("### 💊 Highest Cost Drugs (Gross Spending)")
+    st.markdown("### 💊  Highest Cost Drugs (Gross Spending)")
     if "drug_name" in results_a.columns:
         top_drugs = (
             results_a.groupby("drug_name", as_index=False)
@@ -567,7 +562,7 @@ with driver_col1:
         st.info("Dataset does not contain a `drug_name` column.")
 
 with driver_col2:
-    st.markdown("### 👤 Highest Cost Individuals (Under Left Scenario)")
+    st.markdown("### 👤  Highest Cost Individuals (Under Left Scenario)")
     top_patients = members_a.sort_values("plan_liability", ascending=False).head(10)
     st.dataframe(
         top_patients.style.format({
@@ -589,7 +584,7 @@ st.divider()
 # ---------------------------------------------------------------------
 # 10. Patient Inspector (with Manufacturer & Federal Reinsurance Burden)
 # ---------------------------------------------------------------------
-st.subheader("🔍 Individual Patient Transaction & Coverage Inspector")
+st.subheader("🔍  Individual Patient Transaction & Coverage Inspector")
 patient_ids = sorted(raw_df["patient_id"].dropna().unique().tolist(), key=lambda x: str(x))
 selected_patient = st.selectbox("Select Patient ID", options=patient_ids, format_func=lambda x: str(x))
 
@@ -606,7 +601,7 @@ pi5, pi6, _, _ = st.columns(4)
 pi5.metric("Manufacturer Burden", money(p_summary_a["manufacturer_burden"]))
 pi6.metric("Federal Reinsurance", money(p_summary_a["federal_reinsurance"]))
 
-st.markdown(f"**Transaction-Level Benefit Allocation for `{selected_patient}` (Under Left Scenario)**")
+st.markdown(f"**Transaction-Level Analysis for `{selected_patient}` (Under Left Scenario)**")
 candidate_cols = [
     "encounter_id",
     "pharmacy_order_id",
