@@ -10,18 +10,18 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* 1. Shift the entire slider bar & thumb from red to blue */
-    .st-key-ded_b [data-baseweb="slider"],
-    .st-key-oop_b [data-baseweb="slider"],
-    .st-key-coins_b [data-baseweb="slider"],
-    .st-key-imfg_b [data-baseweb="slider"],
-    .st-key-cmfg_b [data-baseweb="slider"],
-    .st-key-freins_b [data-baseweb="slider"],
-    .st-key-price_chg_b [data-baseweb="slider"] {
+    /* 1. Shift the React Aria slider track & thumb from red to blue */
+    .st-key-ded_b [role="group"][data-rac],
+    .st-key-oop_b [role="group"][data-rac],
+    .st-key-coins_b [role="group"][data-rac],
+    .st-key-imfg_b [role="group"][data-rac],
+    .st-key-cmfg_b [role="group"][data-rac],
+    .st-key-freins_b [role="group"][data-rac],
+    .st-key-price_chg_b [role="group"][data-rac] {
         filter: hue-rotate(215deg) saturate(1.25) !important;
     }
 
-    /* 2. Keep the floating value number crisp #1E88E5 blue */
+    /* 2. Keep the floating thumb value & min/max tick labels crisp #1E88E5 / normal color */
     .st-key-ded_b [data-testid="stSliderThumbValue"],
     .st-key-oop_b [data-testid="stSliderThumbValue"],
     .st-key-coins_b [data-testid="stSliderThumbValue"],
@@ -31,6 +31,16 @@ st.markdown(
     .st-key-price_chg_b [data-testid="stSliderThumbValue"] {
         filter: hue-rotate(-215deg) !important;
         color: #1E88E5 !important;
+    }
+
+    .st-key-ded_b [data-testid="stSliderTickBar"],
+    .st-key-oop_b [data-testid="stSliderTickBar"],
+    .st-key-coins_b [data-testid="stSliderTickBar"],
+    .st-key-imfg_b [data-testid="stSliderTickBar"],
+    .st-key-cmfg_b [data-testid="stSliderTickBar"],
+    .st-key-freins_b [data-testid="stSliderTickBar"],
+    .st-key-price_chg_b [data-testid="stSliderTickBar"] {
+        filter: hue-rotate(-215deg) !important;
     }
     </style>
     """,
