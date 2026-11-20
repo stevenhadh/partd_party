@@ -7,25 +7,63 @@ st.set_page_config(
     layout="wide",
 )
 
-st.html(
+st.markdown(
     """
     <style>
-    /* 1. Exact blue for the floating value text */
-    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-testid="stSliderThumbValue"] {
+    /* 1. Floating value text */
+    .st-key-ded_b [data-testid="stSliderThumbValue"],
+    .st-key-oop_b [data-testid="stSliderThumbValue"],
+    .st-key-coins_b [data-testid="stSliderThumbValue"],
+    .st-key-imfg_b [data-testid="stSliderThumbValue"],
+    .st-key-cmfg_b [data-testid="stSliderThumbValue"],
+    .st-key-freins_b [data-testid="stSliderThumbValue"],
+    .st-key-price_chg_b [data-testid="stSliderThumbValue"] {
         color: #1E88E5 !important;
     }
 
-    /* 2. Shift the red active track & thumb to blue while keeping the gray unfilled track intact */
-    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-baseweb="slider"] {
-        filter: hue-rotate(215deg) saturate(1.25);
+    /* 2. Slider thumb circle */
+    .st-key-ded_b [role="slider"],
+    .st-key-oop_b [role="slider"],
+    .st-key-coins_b [role="slider"],
+    .st-key-imfg_b [role="slider"],
+    .st-key-cmfg_b [role="slider"],
+    .st-key-freins_b [role="slider"],
+    .st-key-price_chg_b [role="slider"] {
+        background-color: #1E88E5 !important;
+        box-shadow: rgba(30, 136, 229, 0.25) 0px 0px 0px 0.2rem !important;
     }
 
-    /* 3. Counter-rotate the value text inside the slider so its #1E88E5 color isn't shifted twice */
-    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-testid="stSliderThumbValue"] {
-        filter: hue-rotate(-215deg);
+    /* 3. Active track fill (hue-rotate shifts red inline linear-gradient to blue without breaking track percentage) */
+    .st-key-ded_b [data-baseweb="slider"] > div > div,
+    .st-key-oop_b [data-baseweb="slider"] > div > div,
+    .st-key-coins_b [data-baseweb="slider"] > div > div,
+    .st-key-imfg_b [data-baseweb="slider"] > div > div,
+    .st-key-cmfg_b [data-baseweb="slider"] > div > div,
+    .st-key-freins_b [data-baseweb="slider"] > div > div,
+    .st-key-price_chg_b [data-baseweb="slider"] > div > div {
+        filter: hue-rotate(215deg) saturate(1.25) !important;
+    }
+
+    /* 4. Undo hue-rotate on the thumb & text inside that div so #1E88E5 stays exact */
+    .st-key-ded_b [role="slider"],
+    .st-key-oop_b [role="slider"],
+    .st-key-coins_b [role="slider"],
+    .st-key-imfg_b [role="slider"],
+    .st-key-cmfg_b [role="slider"],
+    .st-key-freins_b [role="slider"],
+    .st-key-price_chg_b [role="slider"],
+    .st-key-ded_b [data-testid="stSliderThumbValue"],
+    .st-key-oop_b [data-testid="stSliderThumbValue"],
+    .st-key-coins_b [data-testid="stSliderThumbValue"],
+    .st-key-imfg_b [data-testid="stSliderThumbValue"],
+    .st-key-cmfg_b [data-testid="stSliderThumbValue"],
+    .st-key-freins_b [data-testid="stSliderThumbValue"],
+    .st-key-price_chg_b [data-testid="stSliderThumbValue"] {
+        filter: none !important;
     }
     </style>
-    """
+    """,
+    unsafe_allow_html=True,
 )
 
 PRESETS = {
