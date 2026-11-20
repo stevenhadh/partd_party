@@ -10,7 +10,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* 1. Shift the React Aria slider track & thumb from red to blue */
     .st-key-ded_b [role="group"][data-rac],
     .st-key-oop_b [role="group"][data-rac],
     .st-key-coins_b [role="group"][data-rac],
@@ -21,7 +20,6 @@ st.markdown(
         filter: hue-rotate(215deg) saturate(1.25) !important;
     }
 
-    /* 2. Keep the floating thumb value & min/max tick labels crisp #1E88E5 / normal color */
     .st-key-ded_b [data-testid="stSliderThumbValue"],
     .st-key-oop_b [data-testid="stSliderThumbValue"],
     .st-key-coins_b [data-testid="stSliderThumbValue"],
@@ -67,13 +65,40 @@ PRESETS = {
         "price_chg": 0,
     },
     "2027 Standard": {
-        "deductible": 640.0,
+        "deductible": 700.0,
         "oop": 2400.0,
         "coins": 25,
         "imfg": 10,
         "cmfg": 20,
         "freins": 20,
         "price_chg": 0,
+    },
+    "2026 Non-Applicable (Generics)": {
+        "deductible": 615.0,
+        "oop": 2100.0,
+        "coins": 25,
+        "imfg": 0,
+        "cmfg": 0,
+        "freins": 40,
+        "price_chg": 0,
+    },
+    "2027 Non-Applicable (Generics)": {
+        "deductible": 700.0,
+        "oop": 2400.0,
+        "coins": 25,
+        "imfg": 0,
+        "cmfg": 0,
+        "freins": 40,
+        "price_chg": 0,
+    },
+    "2026 +25% Drug Prices": {
+        "deductible": 615.0,
+        "oop": 2100.0,
+        "coins": 25,
+        "imfg": 10,
+        "cmfg": 20,
+        "freins": 20,
+        "price_chg": 25,
     },
 }
 PRESET_NAMES = list(PRESETS.keys())
