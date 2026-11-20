@@ -10,18 +10,25 @@ st.set_page_config(
 st.html(
     """
     <style>
-    /* Thumb (circle) + value label for any widget whose key ends in _b */
-    div[class*="st-key-"][class$="_b"] div[role="slider"] {
+    /* Override Streamlit's primary color variable just for your 7 "_b" sliders */
+    .st-key-ded_b,
+    .st-key-oop_b,
+    .st-key-coins_b,
+    .st-key-imfg_b,
+    .st-key-cmfg_b,
+    .st-key-freins_b,
+    .st-key-price_chg_b {
+        --st-primary-color: #1E88E5 !important;
+        --primary-color: #1E88E5 !important;
+    }
+
+    /* Fallback for BaseWeb inline styles on thumb, value label, and track */
+    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) div[role="slider"] {
         background-color: #1E88E5 !important;
         box-shadow: rgba(30, 136, 229, 0.25) 0px 0px 0px 0.2rem !important;
     }
-    div[class*="st-key-"][class$="_b"] div[data-testid="stSliderThumbValue"] {
+    :is(.st-key-ded_b, .st-key-oop_b, .st-key-coins_b, .st-key-imfg_b, .st-key-cmfg_b, .st-key-freins_b, .st-key-price_chg_b) [data-testid="stSliderThumbValue"] {
         color: #1E88E5 !important;
-    }
-
-    /* Filled portion of the slider track */
-    div[class*="st-key-"][class$="_b"] div[data-baseweb="slider"] > div > div > div:first-child {
-        background-color: #1E88E5 !important;
     }
     </style>
     """
@@ -332,7 +339,7 @@ kpi2.metric("Total Prescriptions", f"{n_rx:,}")
 kpi3.metric("Base Gross Drug Spending", money(base_total_gross))
 kpi4.metric("Base Avg Cost per Patient", money(base_total_gross / n_patients if n_patients else 0))
 
-st.space("medium")
+st.space("small")
 st.caption("Synthetic dataset from Kaggle by DeepLumiere: https://www.kaggle.com/datasets/deeplumiere/hospital-management-data")
 st.divider()
 
@@ -483,7 +490,7 @@ with col_res_l:
 
     cat_count_a = int((members_a["catastrophic_cost"] > 0).sum())
     st.metric("Total Members Reaching Catastrophic", cat_count_a)
-    st.metric("Catastrophic Share", cat_count_a / n_patients if n_patients else 0)
+    st.metric("Catastrophic Share", f"{(cat_count_a / n_patients if n_patients else 0):.1%}")
     
     st.divider()
 
@@ -512,7 +519,7 @@ with col_res_r:
     
     cat_count_b = int((members_b["catastrophic_cost"] > 0).sum())
     st.metric("Total Members Reaching Catastrophic", cat_count_b)
-    st.metric("Catastrophic Share", cat_count_b / n_patients if n_patients else 0)
+    st.metric("Catastrophic Share", f"{(cat_count_b / n_patients if n_patients else 0):.1%}")
     st.divider()
 
     df_b = pd.DataFrame({
@@ -600,7 +607,7 @@ pi5, pi6, _, _ = st.columns(4)
 pi5.metric("Manufacturer Burden", money(p_summary_a["manufacturer_burden"]))
 pi6.metric("Federal Reinsurance", money(p_summary_a["federal_reinsurance"]))
 
-st.markdown(f"**\u00A0\u00A0Transaction-Level Analysis for `{selected_patient}` (Under Left Scenario)**")
+st.markdown(f"**Transaction-Level Analysis for `{selected_patient}` (Under Left Scenario)**")
 candidate_cols = [
     "encounter_id",
     "pharmacy_order_id",
