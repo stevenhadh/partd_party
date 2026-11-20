@@ -327,6 +327,7 @@ col_cfg_left, col_cfg_right = st.columns(2)
 with col_cfg_left:
     st.markdown("### Left Scenario (Base)")
     st.selectbox(
+        "Select a year",
         options=SELECT_OPTIONS,
         key="preset_select_a",
         on_change=on_preset_change,
@@ -368,6 +369,7 @@ with col_cfg_left:
 with col_cfg_right:
     st.markdown("### Right Scenario")
     st.selectbox(
+        "Select a year",
         options=SELECT_OPTIONS,
         key="preset_select_b",
         on_change=on_preset_change,
