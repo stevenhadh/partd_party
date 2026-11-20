@@ -7,25 +7,24 @@ st.set_page_config(
     layout="wide",
 )
 
-st.markdown(
+st.html(
     """
     <style>
-        div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div > div:nth-child(2) {
-            background-color: #2563eb !important;
-        }
-        div[data-testid="stSlider"] div[role="slider"] {
-            background-color: #2563eb !important;
-            border-color: #1d4ed8 !important;
-            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
-        }
-        div[data-testid="stSlider"] div[data-testid="stTickBarMin"],
-        div[data-testid="stSlider"] div[data-testid="stTickBarMax"],
-        div[data-testid="stSlider"] [data-testid="stThumbValue"] {
-            color: #1d4ed8 !important;
-        }
+    /* Thumb (circle) + value label for any widget whose key ends in _b */
+    div[class*="st-key-"][class$="_b"] div[role="slider"] {
+        background-color: #1E88E5 !important;
+        box-shadow: rgba(30, 136, 229, 0.25) 0px 0px 0px 0.2rem !important;
+    }
+    div[class*="st-key-"][class$="_b"] div[data-testid="stSliderThumbValue"] {
+        color: #1E88E5 !important;
+    }
+
+    /* Filled portion of the slider track */
+    div[class*="st-key-"][class$="_b"] div[data-baseweb="slider"] > div > div > div:first-child {
+        background-color: #1E88E5 !important;
+    }
     </style>
-    """,
-    unsafe_allow_html=True,
+    """
 )
 
 PRESETS = {
@@ -233,9 +232,9 @@ def style_right_vs_left(right_df: pd.DataFrame, left_df: pd.DataFrame):
         if "Amount" in row.index:
             amt_idx = list(row.index).index("Amount")
             if right_val > left_val:
-                styles[amt_idx] = "background-color: #d1fae5; color: #065f46; font-weight: 700;"
+                styles[amt_idx] = "background-color: #d1fae5; color: #065f46; font-weight: 500;"
             elif right_val < left_val:
-                styles[amt_idx] = "background-color: #fee2e2; color: #991b1b; font-weight: 700;"
+                styles[amt_idx] = "background-color: #fee2e2; color: #991b1b; font-weight: 500;"
         return styles
 
     return right_df.style.apply(_highlight_row, axis=1).format({
@@ -326,7 +325,7 @@ n_patients = raw_df["patient_id"].nunique()
 n_rx = raw_df["pharmacy_order_id"].nunique()
 base_total_gross = raw_df["total_drug_cost"].sum()
 
-st.subheader("📊  Dataset Overview")
+st.subheader("📊\u00A0\u00A0Dataset Overview")
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 kpi1.metric("Total Patients", f"{n_patients:,}")
 kpi2.metric("Total Prescriptions", f"{n_rx:,}")
@@ -343,7 +342,7 @@ st.divider()
 init_side_state("a", "2026 Standard")
 init_side_state("b", "2027 Standard")
 
-st.subheader("⚙️  Scenario Settings")
+st.subheader("⚙️\u00A0\u00A0Scenario Settings")
 col_cfg_left, col_cfg_right = st.columns(2)
 
 with col_cfg_left:
@@ -541,7 +540,7 @@ st.divider()
 driver_col1, driver_col2 = st.columns(2)
 
 with driver_col1:
-    st.markdown("### 💊  Highest Cost Drugs (Gross Spending)")
+    st.markdown("### 💊\u00A0\u00A0Highest Cost Drugs (Gross Spending)")
     if "drug_name" in results_a.columns:
         top_drugs = (
             results_a.groupby("drug_name", as_index=False)
@@ -562,7 +561,7 @@ with driver_col1:
         st.info("Dataset does not contain a `drug_name` column.")
 
 with driver_col2:
-    st.markdown("### 👤  Highest Cost Individuals (Under Left Scenario)")
+    st.markdown("### 👤\u00A0\u00A0Highest Cost Individuals (Under Left Scenario)")
     top_patients = members_a.sort_values("plan_liability", ascending=False).head(10)
     st.dataframe(
         top_patients.style.format({
@@ -584,7 +583,7 @@ st.divider()
 # ---------------------------------------------------------------------
 # 10. Patient Inspector (with Manufacturer & Federal Reinsurance Burden)
 # ---------------------------------------------------------------------
-st.subheader("🔍  Individual Patient Transaction & Coverage Inspector")
+st.subheader("🔍\u00A0\u00A0Individual Patient Transaction & Coverage Inspector")
 patient_ids = sorted(raw_df["patient_id"].dropna().unique().tolist(), key=lambda x: str(x))
 selected_patient = st.selectbox("Select Patient ID", options=patient_ids, format_func=lambda x: str(x))
 
@@ -601,7 +600,7 @@ pi5, pi6, _, _ = st.columns(4)
 pi5.metric("Manufacturer Burden", money(p_summary_a["manufacturer_burden"]))
 pi6.metric("Federal Reinsurance", money(p_summary_a["federal_reinsurance"]))
 
-st.markdown(f"**Transaction-Level Analysis for `{selected_patient}` (Under Left Scenario)**")
+st.markdown(f"**\u00A0\u00A0Transaction-Level Analysis for `{selected_patient}` (Under Left Scenario)**")
 candidate_cols = [
     "encounter_id",
     "pharmacy_order_id",
