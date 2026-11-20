@@ -73,7 +73,7 @@ PRESETS = {
         "freins": 20,
         "price_chg": 0,
     },
-    "2026 Non-Applicable (Generics)": {
+    "2026 Non-Applicable Generics": {
         "deductible": 615.0,
         "oop": 2100.0,
         "coins": 25,
@@ -82,7 +82,7 @@ PRESETS = {
         "freins": 40,
         "price_chg": 0,
     },
-    "2027 Non-Applicable (Generics)": {
+    "2027 Non-Applicable Generics": {
         "deductible": 700.0,
         "oop": 2400.0,
         "coins": 25,
