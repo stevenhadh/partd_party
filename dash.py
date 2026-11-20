@@ -558,4 +558,97 @@ with driver_col1:
             .agg(
                 gross_cost=("total_drug_cost", "sum"),
                 plan_liability=("plan_liability", "sum"),
-                prescriptions=("pharmacy_order
+                prescriptions=("pharmacy_order_id", "nunique"),
+            )
+            .sort_values("gross_cost", ascending=False)
+            .head(10)
+        )
+        st.dataframe(
+            top_drugs.style.format({"gross_cost": "${:,.0f}", "plan_liability": "${:,.0f}"}),
+            hide_index=True,
+            use_container_width=True,
+        )
+    else:
+        st.info("Dataset does not contain a `drug_name` column.")
+
+with driver_col2:
+    st.markdown("### 👤 Highest Cost Individuals (Left Scenario)")
+    top_patients = members_a.sort_values("plan_liability", ascending=False).head(10)
+    st.dataframe(
+        top_patients.style.format({
+            "gross_drug_cost": "${:,.0f}",
+            "deductible_cost": "${:,.0f}",
+            "initial_cost": "${:,.0f}",
+            "catastrophic_cost": "${:,.0f}",
+            "beneficiary_payment": "${:,.0f}",
+            "manufacturer_burden": "${:,.0f}",
+            "federal_reinsurance": "${:,.0f}",
+            "plan_liability": "${:,.0f}",
+        }),
+        hide_index=True,
+        use_container_width=True,
+    )
+
+st.divider()
+
+# ---------------------------------------------------------------------
+# 10. Patient Inspector (with Manufacturer & Federal Reinsurance Burden)
+# ---------------------------------------------------------------------
+st.subheader("🔍 Patient Transaction & Coverage Inspector")
+patient_ids = sorted(raw_df["patient_id"].dropna().unique().tolist(), key=lambda x: str(x))
+selected_patient = st.selectbox("Select Patient ID", options=patient_ids, format_func=lambda x: str(x))
+
+p_claims_a = results_a[results_a["patient_id"] == selected_patient].copy()
+p_summary_a = members_a[members_a["patient_id"] == selected_patient].iloc[0]
+
+pi1, pi2, pi3, pi4 = st.columns(4)
+pi1.metric("Patient Gross Cost", money(p_summary_a["gross_drug_cost"]))
+pi2.metric("Member OOP (Left)", money(p_summary_a["beneficiary_payment"]))
+pi3.metric("Plan Liability (Left)", money(p_summary_a["plan_liability"]))
+pi4.metric("Prescription Count", f"{int(p_summary_a['prescription_count']):,}")
+
+pi5, pi6, _, _ = st.columns(4)
+pi5.metric("Manufacturer Burden (Left)", money(p_summary_a["manufacturer_burden"]))
+pi6.metric("Federal Reinsurance (Left)", money(p_summary_a["federal_reinsurance"]))
+
+st.markdown(f"**Transaction-Level Benefit Allocation for Patient `{selected_patient}` (Left Scenario)**")
+candidate_cols = [
+    "encounter_id",
+    "pharmacy_order_id",
+    "drug_name",
+    "total_drug_cost",
+    "deductible_cost",
+    "initial_cost",
+    "catastrophic_cost",
+    "beneficiary_payment",
+    "initial_manufacturer_discount",
+    "catastrophic_manufacturer_discount",
+    "manufacturer_burden",
+    "federal_reinsurance",
+    "plan_liability",
+]
+patient_display_cols = [c for c in candidate_cols if c in p_claims_a.columns]
+
+currency_cols = [
+    c for c in [
+        "total_drug_cost",
+        "deductible_cost",
+        "initial_cost",
+        "catastrophic_cost",
+        "beneficiary_payment",
+        "initial_manufacturer_discount",
+        "catastrophic_manufacturer_discount",
+        "manufacturer_burden",
+        "federal_reinsurance",
+        "plan_liability",
+    ]
+    if c in patient_display_cols
+]
+
+st.dataframe(
+    p_claims_a[patient_display_cols].style.format({c: "${:,.2f}" for c in currency_cols}),
+    hide_index=True,
+    use_container_width=True,
+)
+
+st.caption("Dashboard fully synchronized with GitHub source data and dual preset/custom scenario sliders.")
