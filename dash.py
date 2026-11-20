@@ -38,6 +38,7 @@ PRESETS = {
     },
 }
 PRESET_NAMES = list(PRESETS.keys())
+SELECT_OPTIONS = PRESET_NAMES + ["Custom"]
 
 
 # ---------------------------------------------------------------------
@@ -200,8 +201,8 @@ def pct(value: float) -> str:
     return f"{value:.1%}"
 
 
-def style_right_higher_than_left(right_df: pd.DataFrame, left_df: pd.DataFrame):
-    """Highlight 'Amount' cells in green when Right scenario value > Left scenario value."""
+def style_right_vs_left(right_df: pd.DataFrame, left_df: pd.DataFrame):
+    """Highlight 'Amount' green if Right > Left, and red if Right < Left."""
     left_map = dict(zip(left_df["Responsible Party"], left_df["Amount"]))
 
     def _highlight_row(row):
@@ -209,9 +210,12 @@ def style_right_higher_than_left(right_df: pd.DataFrame, left_df: pd.DataFrame):
         party = row["Responsible Party"]
         right_val = row["Amount"]
         left_val = left_map.get(party, right_val)
-        if right_val > left_val and "Amount" in row.index:
+        if "Amount" in row.index:
             amt_idx = list(row.index).index("Amount")
-            styles[amt_idx] = "background-color: #d1fae5; color: #065f46; font-weight: 700;"
+            if right_val > left_val:
+                styles[amt_idx] = "background-color: #d1fae5; color: #065f46; font-weight: 700;"
+            elif right_val < left_val:
+                styles[amt_idx] = "background-color: #fee2e2; color: #991b1b; font-weight: 700;"
         return styles
 
     return right_df.style.apply(_highlight_row, axis=1).format({
@@ -221,11 +225,12 @@ def style_right_higher_than_left(right_df: pd.DataFrame, left_df: pd.DataFrame):
 
 
 # ---------------------------------------------------------------------
-# 3. Scenario State Callbacks (Presets selectable; sliders switch to Custom)
+# 3. Scenario State Callbacks
 # ---------------------------------------------------------------------
 def _apply_preset_to_state(side: str, preset_name: str):
     vals = PRESETS[preset_name]
-    st.session_state[f"mode_{side}"] = preset_name
+    st.session_state[f"last_preset_{side}"] = preset_name
+    st.session_state[f"preset_select_{side}"] = preset_name
     st.session_state[f"ded_{side}"] = float(vals["deductible"])
     st.session_state[f"oop_{side}"] = float(vals["oop"])
     st.session_state[f"coins_{side}"] = int(vals["coins"])
@@ -236,14 +241,17 @@ def _apply_preset_to_state(side: str, preset_name: str):
 
 
 def init_side_state(side: str, default_preset: str):
-    mode_key = f"mode_{side}"
+    last_key = f"last_preset_{side}"
     select_key = f"preset_select_{side}"
+    blocked_key = f"custom_blocked_{side}"
     vals = PRESETS[default_preset]
 
-    if mode_key not in st.session_state:
-        st.session_state[mode_key] = default_preset
+    if last_key not in st.session_state:
+        st.session_state[last_key] = default_preset
     if select_key not in st.session_state:
         st.session_state[select_key] = default_preset
+    if blocked_key not in st.session_state:
+        st.session_state[blocked_key] = False
 
     defaults = {
         f"ded_{side}": float(vals["deductible"]),
@@ -261,11 +269,19 @@ def init_side_state(side: str, default_preset: str):
 
 def on_preset_change(side: str):
     chosen = st.session_state[f"preset_select_{side}"]
-    _apply_preset_to_state(side, chosen)
+    if chosen == "Custom":
+        # Snap back to the last valid preset so users cannot manually select Custom
+        fallback = st.session_state.get(f"last_preset_{side}", PRESET_NAMES[0])
+        st.session_state[f"preset_select_{side}"] = fallback
+        st.session_state[f"custom_blocked_{side}"] = True
+    else:
+        st.session_state[f"custom_blocked_{side}"] = False
+        _apply_preset_to_state(side, chosen)
 
 
 def on_slider_change(side: str):
-    st.session_state[f"mode_{side}"] = "Custom"
+    st.session_state[f"custom_blocked_{side}"] = False
+    st.session_state[f"preset_select_{side}"] = "Custom"
 
 
 # ---------------------------------------------------------------------
@@ -317,13 +333,14 @@ with col_cfg_left:
     st.markdown("### Left Scenario")
     st.selectbox(
         "Preset Year (Left)",
-        options=PRESET_NAMES,
+        options=SELECT_OPTIONS,
         key="preset_select_a",
         on_change=on_preset_change,
         args=("a",),
     )
-    active_label_a = st.session_state["mode_a"]
-    st.markdown(f"**Active Scenario:** `{active_label_a}`")
+    if st.session_state.get("custom_blocked_a"):
+        st.caption("Custom is set automatically when adjusting sliders rather than selected manually.")
+    active_label_a = st.session_state["preset_select_a"]
 
     ded_a = st.slider(
         "Deductible ($) - Left", 0.0, 2000.0, step=25.0,
@@ -358,13 +375,14 @@ with col_cfg_right:
     st.markdown("### Right Scenario")
     st.selectbox(
         "Preset Year (Right)",
-        options=PRESET_NAMES,
+        options=SELECT_OPTIONS,
         key="preset_select_b",
         on_change=on_preset_change,
         args=("b",),
     )
-    active_label_b = st.session_state["mode_b"]
-    st.markdown(f"**Active Scenario:** `{active_label_b}`")
+    if st.session_state.get("custom_blocked_b"):
+        st.caption("Custom is set automatically when adjusting sliders rather than selected manually.")
+    active_label_b = st.session_state["preset_select_b"]
 
     ded_b = st.slider(
         "Deductible ($) - Right", 0.0, 2000.0, step=25.0,
@@ -496,9 +514,9 @@ with col_res_r:
             fed_b / gross_b if gross_b else 0,
         ],
     })
-    st.caption("Green highlight indicates Right scenario amount is higher than Left scenario.")
+    st.caption("Green = Right > Left | Red = Right < Left.")
     st.dataframe(
-        style_right_higher_than_left(df_b, df_a),
+        style_right_vs_left(df_b, df_a),
         hide_index=True,
         use_container_width=True,
     )
