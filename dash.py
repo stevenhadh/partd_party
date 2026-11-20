@@ -10,48 +10,18 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* 1. Floating value text */
-    .st-key-ded_b [data-testid="stSliderThumbValue"],
-    .st-key-oop_b [data-testid="stSliderThumbValue"],
-    .st-key-coins_b [data-testid="stSliderThumbValue"],
-    .st-key-imfg_b [data-testid="stSliderThumbValue"],
-    .st-key-cmfg_b [data-testid="stSliderThumbValue"],
-    .st-key-freins_b [data-testid="stSliderThumbValue"],
-    .st-key-price_chg_b [data-testid="stSliderThumbValue"] {
-        color: #1E88E5 !important;
-    }
-
-    /* 2. Slider thumb circle */
-    .st-key-ded_b [role="slider"],
-    .st-key-oop_b [role="slider"],
-    .st-key-coins_b [role="slider"],
-    .st-key-imfg_b [role="slider"],
-    .st-key-cmfg_b [role="slider"],
-    .st-key-freins_b [role="slider"],
-    .st-key-price_chg_b [role="slider"] {
-        background-color: #1E88E5 !important;
-        box-shadow: rgba(30, 136, 229, 0.25) 0px 0px 0px 0.2rem !important;
-    }
-
-    /* 3. Active track fill (hue-rotate shifts red inline linear-gradient to blue without breaking track percentage) */
-    .st-key-ded_b [data-baseweb="slider"] > div > div,
-    .st-key-oop_b [data-baseweb="slider"] > div > div,
-    .st-key-coins_b [data-baseweb="slider"] > div > div,
-    .st-key-imfg_b [data-baseweb="slider"] > div > div,
-    .st-key-cmfg_b [data-baseweb="slider"] > div > div,
-    .st-key-freins_b [data-baseweb="slider"] > div > div,
-    .st-key-price_chg_b [data-baseweb="slider"] > div > div {
+    /* 1. Shift the entire slider bar & thumb from red to blue */
+    .st-key-ded_b [data-baseweb="slider"],
+    .st-key-oop_b [data-baseweb="slider"],
+    .st-key-coins_b [data-baseweb="slider"],
+    .st-key-imfg_b [data-baseweb="slider"],
+    .st-key-cmfg_b [data-baseweb="slider"],
+    .st-key-freins_b [data-baseweb="slider"],
+    .st-key-price_chg_b [data-baseweb="slider"] {
         filter: hue-rotate(215deg) saturate(1.25) !important;
     }
 
-    /* 4. Undo hue-rotate on the thumb & text inside that div so #1E88E5 stays exact */
-    .st-key-ded_b [role="slider"],
-    .st-key-oop_b [role="slider"],
-    .st-key-coins_b [role="slider"],
-    .st-key-imfg_b [role="slider"],
-    .st-key-cmfg_b [role="slider"],
-    .st-key-freins_b [role="slider"],
-    .st-key-price_chg_b [role="slider"],
+    /* 2. Keep the floating value number crisp #1E88E5 blue */
     .st-key-ded_b [data-testid="stSliderThumbValue"],
     .st-key-oop_b [data-testid="stSliderThumbValue"],
     .st-key-coins_b [data-testid="stSliderThumbValue"],
@@ -59,7 +29,8 @@ st.markdown(
     .st-key-cmfg_b [data-testid="stSliderThumbValue"],
     .st-key-freins_b [data-testid="stSliderThumbValue"],
     .st-key-price_chg_b [data-testid="stSliderThumbValue"] {
-        filter: none !important;
+        filter: hue-rotate(-215deg) !important;
+        color: #1E88E5 !important;
     }
     </style>
     """,
